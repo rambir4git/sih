@@ -15,7 +15,6 @@ public class livemap extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient());
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
         webView.loadUrl("https://aqicn.org/map/india/");
     }
