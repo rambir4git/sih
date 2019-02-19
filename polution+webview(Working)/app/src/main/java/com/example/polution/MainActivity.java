@@ -13,12 +13,13 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
-    //final public TextView textView=(TextView)findViewById(R.id.resultView);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,15 +31,14 @@ public class MainActivity extends AppCompatActivity {
         final Button fetch = (Button)findViewById(R.id.button);
         final Button mapbutton= (Button)findViewById(R.id.mapbutton);
         final TextView textView= (TextView)findViewById(R.id.resultView);
-        final String[] citySelected = new String[1];
+        final String citySelected[] = {""};
         ArrayAdapter<CharSequence> adapterState=ArrayAdapter.createFromResource(this,R.array.state,android.R.layout.simple_spinner_item);
         adapterState.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         stateSpinner.setAdapter(adapterState);
         stateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                final String stateSelected = (String) parent.getItemAtPosition(position);
-                switch (position){
+                 switch (position){
                     case 0: Toast.makeText(MainActivity.this, "Select State", Toast.LENGTH_SHORT).show();
                         break;
                     case 1:ArrayAdapter<CharSequence> adapterCityAP=ArrayAdapter.createFromResource(MainActivity.this,R.array.cityAP,android.R.layout.simple_spinner_item);
@@ -113,30 +113,53 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        fetch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    String polutionData = new polutionData().execute(citySelected[0]).get();
-                    JSONArray polutionJSON = new JSONArray(polutionData);
-                    String polutionResult="Data fetched from data.gov.in\nLast updated : "+ polutionJSON.getJSONObject(0).getString("last_update");
-                    for(int i=0;i<polutionJSON.length();i++)
-                    {
-                        polutionResult += "\nPolutant : "+polutionJSON.getJSONObject(i).getString("pollutant_id")
-                                +"\nMin:"+polutionJSON.getJSONObject(i).getString("pollutant_min")
-                                +"\tAvg:"+polutionJSON.getJSONObject(i).getString("pollutant_avg")
-                                +"\tMax:"+polutionJSON.getJSONObject(i).getString("pollutant_max");
+        try {
+            fetch.setOnClickListener(new View.OnClickListener() {
+                JSONArray polutionJSON;
+                String jsonINITIAL ="[]";
+                JSONArray recordJSON= new JSONArray(jsonINITIAL);
+                JSONObject temp;
+                String polutionResult="";
+                String polutionStation="";
+                @Override
+                public void onClick(View v) {
+                    if (recordJSON.length()==0) {
+                        try {
+                            recordJSON = new polutionData().execute().get();
+                            Toast.makeText(MainActivity.this, "Got the data", Toast.LENGTH_SHORT).show();
+                            } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }temp = new JSONObject();
+                    if(recordJSON.length()!=0){
+                        try {
+                            polutionStation="Data provided by data.gov.in\nRecords last updated:"+recordJSON.getJSONObject(0).getString("last_update");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        for(int i=0;i<recordJSON.length();i++){
+                            try {
+                                temp = recordJSON.getJSONObject(i);
+                                if(temp.getString("station").equals(citySelected[0]))
+                                    polutionStation +="\nPolutant : "+temp.getString("pollutant_id")
+                                            +"\nMin:"+temp.getString("pollutant_min")
+                                            +"\tAvg:"+temp.getString("pollutant_avg")
+                                            +"\tMax:"+temp.getString("pollutant_max");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        textView.setText(polutionStation);
+                        polutionStation="";
                     }
-                    textView.setText(polutionResult);
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+
                 }
-            }
-        });
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         mapbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,7 +168,5 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
     }
 }

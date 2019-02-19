@@ -15,15 +15,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class polutionData extends AsyncTask<Object,String,String> {
+public class polutionData extends AsyncTask<Void,Void,JSONArray> {
 
     @Override
-    protected String doInBackground(Object... objects) {
-
-        String cityText = (String) objects[0];
-        String finalstr="";
-        String returnstr="";
-        JSONArray polutionData;
+    protected JSONArray doInBackground(Void...voids) {
+        JSONArray polutionData = null;
         HttpURLConnection urlConnection = null;
         String mainurl = "http://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69?api-key=579b464db66ec23bdd000001258e7305e65b42f9567b051a7aee2fb4&format=json";
         URL url = null;
@@ -32,7 +28,6 @@ public class polutionData extends AsyncTask<Object,String,String> {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        HttpURLConnection urlConnection1 = null;
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
@@ -44,39 +39,17 @@ public class polutionData extends AsyncTask<Object,String,String> {
             }
 
             JSONObject jsonObj = new JSONObject(fullStr);
-            JSONArray result = jsonObj.getJSONArray("records");
-            for(int i=0;i<result.length();i++)
-            {
-                int j=0;
-                JSONObject jsonTemp = result.getJSONObject(i);
-                if(jsonTemp.get("station").equals(cityText)){
-                    finalstr += result.getJSONObject(i).toString();
-                }
-            }
-             returnstr = "["+result.getJSONObject(0).toString()+","+
-                    result.getJSONObject(1).toString()+","+
-                    result.getJSONObject(2).toString()+","+
-                    result.getJSONObject(3).toString()+","+
-                    result.getJSONObject(4).toString()+","+
-                    result.getJSONObject(5).toString()+","+
-                    result.getJSONObject(6).toString()+"]";
-
+            polutionData = jsonObj.getJSONArray("records");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
 
             urlConnection.disconnect();
         }
 
-        return returnstr;
-    }
-
-    @Override
-    protected void onPostExecute(String s) {
-        super.onPostExecute(s);
-
+        return polutionData;
     }
 }
 
