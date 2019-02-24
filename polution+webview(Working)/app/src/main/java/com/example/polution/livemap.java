@@ -16,6 +16,6 @@ public class livemap extends AppCompatActivity {
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDisplayZoomControls(false);
-        webView.loadUrl("https://aqicn.org/map/india/");
+        webView.loadUrl("https://aqicn.org/map/india/m");
     }
 }
